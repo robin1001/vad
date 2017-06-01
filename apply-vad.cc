@@ -1,5 +1,5 @@
 /* Created on 2017-03-01
- * Author: Zhang Binbin
+ * Author: Binbin Zhang
  */
 
 #include <stdio.h>
@@ -63,8 +63,7 @@ int main(int argc, char *argv[]) {
         data[i] = reader.Data()[i * reader.NumChannel()];
     }
 
-    Vad vad;
-    VadInit(&vad, energy_thresh, sil_to_speech_trigger, speech_to_sil_trigger);
+    Vad vad(energy_thresh, sil_to_speech_trigger, speech_to_sil_trigger);
 
     int num_frames = (num_sample - num_point_per_frame) / num_point_shift + 1;
     std::vector<int> vad_reslut;
@@ -73,7 +72,7 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < num_sample; i += num_point_shift) {
         // last frame 
         if (i + num_point_per_frame > num_sample) break;
-        int tags = IsSpeech(&vad, data+i, num_point_per_frame) ? 1 : 0;
+        int tags = vad.IsSpeech(data+i, num_point_per_frame) ? 1 : 0;
         vad_reslut.push_back(tags);
         if (tags == 1) num_speech_frames++;
         printf("%f %d \n", float(i) / sample_rate, tags);

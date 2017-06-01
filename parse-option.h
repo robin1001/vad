@@ -1,5 +1,5 @@
 /* Created on 2016-09-14
- * Author: Zhang Binbin
+ * Author: Binbin Zhang
  * About: cpp command argv parser, 
  */
 
@@ -100,7 +100,9 @@ public:
         } else if (string_map_.end() != string_map_.find(key)) {
             *(string_map_[key]) = value;
         } else {
-            return false;
+            std::cerr << "Invalid option -- " << key << "\n";
+            PrintUsage();
+            exit(1);
         }
         return true;
     }

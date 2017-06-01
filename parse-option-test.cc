@@ -1,5 +1,5 @@
 /* Created on 2016-09-14
- * Author: Zhang Binbin
+ * Author: Binbin Zhang
  */
 
 #include "parse-option.h"

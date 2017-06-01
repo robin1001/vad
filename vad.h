@@ -1,5 +1,5 @@
 /* Created on 2016-08-24
- * Author: Zhang Binbin
+ * Author: Binbin Zhang
  */
 
 #ifndef VAD_H_
@@ -12,66 +12,75 @@ typedef enum {
     kSilence
 } VadState;
 
-
-typedef struct {
-    float energy_thresh;        
-    int silence_to_speech_thresh;
-    int speech_to_sil_thresh;
-    int silence_frame_count;
-    int speech_frame_count;
-    int frame_count;
-    VadState state;
-} Vad;
-
-
-void VadInit(Vad *vad, float energy_thresh, int speech_thresh, int sil_thresh) {
-    vad->energy_thresh = energy_thresh;
-    vad->silence_to_speech_thresh = speech_thresh;
-    vad->speech_to_sil_thresh = sil_thresh;
-    vad->silence_frame_count = 0;
-    vad->speech_frame_count = 0;
-    vad->frame_count = 0;
-    vad->state = kSilence;
-}
-
-// return 1 if current frame is speech
-bool IsSpeech(Vad *vad, float *data, int num_point) {
-    float energy = 0.0; 
-    bool is_voice = false;
-    for (int i = 0; i < num_point; i++) {
-        energy += data[i] * data[i];
-    }
-    if (energy > vad->energy_thresh) is_voice = true;
-    switch (vad->state) {
-        case kSilence:
-            if (is_voice) {
-                vad->speech_frame_count++;
-                if (vad->speech_frame_count >= vad->silence_to_speech_thresh) {
-                    vad->state = kSpeech;
-                    vad->silence_frame_count = 0;
-                }
-            } else {
-                vad->speech_frame_count = 0;
-            }
-            break;
-        case kSpeech:
-            if (!is_voice) {
-                vad->silence_frame_count++;
-                if (vad->silence_frame_count >= vad->speech_to_sil_thresh) {
-                    vad->state = kSilence;
-                    vad->speech_frame_count = 0;
-                }
-            } else {
-                vad->silence_frame_count = 0;
-            }
-            break;
-        default:
-            assert(0);
+class Vad {
+public:
+    Vad(float energy_thresh, int silence_to_speech_thresh, 
+        int speech_to_sil_thresh): 
+        energy_thresh_(energy_thresh), 
+        silence_to_speech_thresh_(silence_to_speech_thresh),
+        speech_to_sil_thresh_(speech_to_sil_thresh),
+        silence_frame_count_(0), speech_frame_count_(0), 
+        frame_count_(0), state_(kSilence) {
     }
 
-    if (vad->state == kSpeech) return true;
-    else return false;
-}
+    Vad() {
+        Reset();
+    }
+
+    void Reset() {
+        silence_frame_count_ = 0; 
+        speech_frame_count_ = 0;
+        frame_count_ = 0; 
+        state_ = kSilence; 
+    }
+
+    // return 1 if current frame is speech
+    bool IsSpeech(float *data, int num_point) {
+        float energy = 0.0; 
+        bool is_voice = false;
+        for (int i = 0; i < num_point; i++) {
+            energy += data[i] * data[i];
+        }
+        if (energy > energy_thresh_) is_voice = true;
+        switch (state_) {
+            case kSilence:
+                if (is_voice) {
+                    speech_frame_count_++;
+                    if (speech_frame_count_ >= silence_to_speech_thresh_) {
+                        state_ = kSpeech;
+                        silence_frame_count_ = 0;
+                    }
+                } else {
+                    speech_frame_count_ = 0;
+                }
+                break;
+            case kSpeech:
+                if (!is_voice) {
+                    silence_frame_count_++;
+                    if (silence_frame_count_ >= speech_to_sil_thresh_) {
+                        state_ = kSilence;
+                        speech_frame_count_ = 0;
+                    }
+                } else {
+                    silence_frame_count_ = 0;
+                }
+                break;
+            default:
+                assert(0);
+        }
+        if (state_ == kSpeech) return true;
+        else return false;
+    }
+private:
+    float energy_thresh_;        
+    int silence_to_speech_thresh_;
+    int speech_to_sil_thresh_;
+    int silence_frame_count_;
+    int speech_frame_count_;
+    int frame_count_;
+    VadState state_;
+};
+
 
 #endif
 

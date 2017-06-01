@@ -1,5 +1,5 @@
 /* Created on 2016-08-15
- * Author: Zhang Binbin
+ * Author: Binbin Zhang
  */
 
 #ifndef WAV_H_
